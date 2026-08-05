@@ -10,13 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 979766285f2653b46ac9cd8f5d7bf141, type: 3}
-  m_Name: TestCard
+  m_Name: TestCard_Heal
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: 
-  artwork: {fileID: 0}
-  cardType: 
-  description: 
-  effects: []
+  cardName: Pichardo
+  artwork: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  cardType: Pudenda
+  description: Pichardo el Alabardo
+  effects:
+  - rid: 4370831526011338841
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: 4370831526011338841
+      type: {class: HealEffect, ns: , asm: Assembly-CSharp}
+      data:
+        healAmount: 5

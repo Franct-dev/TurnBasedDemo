@@ -13,4 +13,12 @@ public class CardData : ScriptableObject
     [SerializeReference, SubclassSelector]
     private List<CardEffect> effects = new List<CardEffect>();
 
+    public void PlayCard(EffectContext context)
+    {
+        Debug.Log($"Played card {cardName}");
+        foreach (var effect in effects)
+        {
+            effect.Execute(context);
+        }
+    }
 }

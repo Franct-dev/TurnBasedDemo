@@ -28,9 +28,11 @@ public class DamageEffect : CardEffect
 
     public override void Execute(EffectContext context)
     {
-        // En un juego real, aquí buscarías un componente de vida:
-        // context.Target.GetComponent<Health>().TakeDamage(damageAmount);
-        Debug.Log($"[DamageEffect] Haciendo {damageAmount} de daño a {context.Target.name}");
+        // Unity busca en el GameObject si hay algún script (MonoBehaviour) que implemente IDamageable
+        if (context.Target != null && context.Target.TryGetComponent<IDamageable>(out var damageableTarget))
+        {
+            damageableTarget.TakeDamage(damageAmount);
+        }
     }
 }
 
@@ -41,7 +43,10 @@ public class HealEffect : CardEffect
 
     public override void Execute(EffectContext context)
     {
-        Debug.Log($"[HealEffect] Curando {healAmount} de vida a {context.Caster.name}");
+        if (context.Target != null && context.Target.TryGetComponent<IHealable>(out var healableTarget))
+        {
+            healableTarget.Heal(healAmount);
+        }
     }
 }
 
