@@ -16,6 +16,7 @@ MonoBehaviour:
   artwork: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   cardType: Pudenda
   description: Un saco escrotal colgante como Dios manda
+  validTargets: 4
   effects:
   - rid: 4370831526011338826
   references:

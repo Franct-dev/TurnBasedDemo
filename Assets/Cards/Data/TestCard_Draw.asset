@@ -16,6 +16,7 @@ MonoBehaviour:
   artwork: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   cardType: Pudenda
   description: El nombre lo dice todo
+  validTargets: 1
   effects:
   - rid: 4370831526011338840
   references:

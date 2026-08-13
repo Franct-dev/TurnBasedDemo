@@ -1,5 +1,16 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
+
+[Flags]
+public enum TargetType
+{
+    None = 0,
+    Self = 1 << 0, // La propia unidad que lanza la carta
+    Ally = 1 << 1, // Otras unidades aliadas
+    Enemy = 1 << 2, // Unidades enemigas
+    Interactable = 1 << 3  // Objetos del mapa (barriles, cofres, etc.)
+}
 
 [CreateAssetMenu(menuName = "ScriptableObjects/CardData")]
 public class CardData : ScriptableObject
@@ -9,6 +20,8 @@ public class CardData : ScriptableObject
     public string cardType;
     [TextArea]
     public string description;
+
+    public TargetType validTargets = TargetType.Enemy; // Se puede seleccionar múltiple en el Inspector
 
     [SerializeReference, SubclassSelector]
     private List<CardEffect> effects = new List<CardEffect>();
@@ -20,5 +33,38 @@ public class CardData : ScriptableObject
         {
             effect.Execute(context);
         }
+    }
+
+    // Método de validación
+    public bool IsValidTarget(BaseUnit caster, GameObject target)
+    {
+        if (target == null) return false;
+
+        // 1. Si el objetivo es el propio emisor
+        if (target == caster.gameObject)
+        {
+            return validTargets.HasFlag(TargetType.Self);
+        }
+
+        // 2. Si el objetivo es una unidad (BaseUnit)
+        if (target.TryGetComponent<BaseUnit>(out var targetUnit))
+        {
+            if (targetUnit.Faction == caster.Faction)
+            {
+                return validTargets.HasFlag(TargetType.Ally);
+            }
+            else
+            {
+                return validTargets.HasFlag(TargetType.Enemy);
+            }
+        }
+
+        // 3. Si el objetivo es un objeto interactivo del escenario
+        if (target.TryGetComponent<ISelectable>(out _))
+        {
+            return validTargets.HasFlag(TargetType.Interactable);
+        }
+
+        return false;
     }
 }

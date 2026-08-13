@@ -23,6 +23,7 @@ public class SelectionManager : MonoBehaviour
     private CardData pendingCard;
     public bool IsTargetingCard => pendingCard != null;
     public event Action<CardData> OnCardTargetingStarted;
+    public event Action<CardData> OnCardTargetingEnded;
 
     private void Awake()
     {
@@ -117,6 +118,13 @@ public class SelectionManager : MonoBehaviour
 
     private void ExecuteCardOnTarget(GameObject target)
     {
+        //comprobar si el objetivo es valido
+        if (pendingCard.IsValidTarget(SelectedAlly, target) == false)
+        {
+            Debug.Log("Invalid target");
+            return;
+        }
+
         // Creamos el contexto enviando Caster y Target juntos
         EffectContext context = new EffectContext
         {
@@ -136,8 +144,9 @@ public class SelectionManager : MonoBehaviour
         CurrentSelected = null;
         SelectedAlly = null;
         InspectedEnemy = null;
-        pendingCard = null;
         OnSelectionCleared?.Invoke();
+        OnCardTargetingEnded?.Invoke(pendingCard);
+        pendingCard = null;
     }
 
     //CARD TARGETING
@@ -157,6 +166,7 @@ public class SelectionManager : MonoBehaviour
 
     public void CancelCardTargeting()
     {
+        OnCardTargetingEnded?.Invoke(pendingCard);
         pendingCard = null;
     }
 }
