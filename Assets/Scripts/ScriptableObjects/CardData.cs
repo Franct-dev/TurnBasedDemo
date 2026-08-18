@@ -12,14 +12,15 @@ public enum TargetType
     Interactable = 1 << 3  // Objetos del mapa (barriles, cofres, etc.)
 }
 
+
 [CreateAssetMenu(menuName = "ScriptableObjects/CardData")]
 public class CardData : ScriptableObject
 {
-    public string cardName;
-    public Sprite artwork;
-    public string cardType;
+    public string CardName;
+    public Sprite Artwork;
+    public string CardType;
     [TextArea]
-    public string description;
+    public string Description;
 
     public TargetType validTargets = TargetType.Enemy; // Se puede seleccionar múltiple en el Inspector
 
@@ -28,7 +29,7 @@ public class CardData : ScriptableObject
 
     public void PlayCard(EffectContext context)
     {
-        Debug.Log($"Played card {cardName}");
+        Debug.Log($"Played card {CardName}");
         foreach (var effect in effects)
         {
             effect.Execute(context);

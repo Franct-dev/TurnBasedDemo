@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 979766285f2653b46ac9cd8f5d7bf141, type: 3}
-  m_Name: TestCard_Damage
+  m_Name: TestCard_Damage_2
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "Test \xCDculos"
-  artwork: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  cardType: Pudenda
-  description: Un saco escrotal colgante como Dios manda
+  CardName: Damage +
+  Artwork: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  CardType: 
+  Description: 
   validTargets: 4
   effects:
   - rid: 4370831526011338826
@@ -25,4 +25,4 @@ MonoBehaviour:
     - rid: 4370831526011338826
       type: {class: DamageEffect, ns: , asm: Assembly-CSharp}
       data:
-        damageAmount: 3
+        damageAmount: 6

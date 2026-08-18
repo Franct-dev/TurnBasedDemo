@@ -26,6 +26,8 @@ public class BaseUnit : MonoBehaviour, ISelectable, ITargeteable, IDamageable, I
     //magia para que devuelva el transform tal cual
     public Transform GetTransform() => transform;
 
+    public UnitData Data;
+
     public void ApplyEffect(EffectContext context)
     {
 

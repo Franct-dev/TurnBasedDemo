@@ -9,7 +9,7 @@ public class CardTesting : MonoBehaviour
     {
         if(transform.GetChild(0).TryGetComponent(out cardNameTxt))
         {
-            cardNameTxt.text = cardToTest.cardName;
+            cardNameTxt.text = cardToTest.CardName;
         }
         if(TryGetComponent<UnityEngine.UI.Button>(out var btn))
         {

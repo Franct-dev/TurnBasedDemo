@@ -1,7 +1,10 @@
 using System;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+
+public enum TargetingMode { Normal, Card, Movement }
 
 public class SelectionManager : MonoBehaviour
 {
@@ -15,20 +18,33 @@ public class SelectionManager : MonoBehaviour
     public event Action<ISelectable> OnInteractableSelected;
     public event Action OnSelectionCleared;
 
+    // ESTADO DE INTERACCIÓN
+    public TargetingMode CurrentMode { get; private set; } = TargetingMode.Normal;
+
+    [Header("Raycast Layers")]
     [SerializeField] private LayerMask selectableLayer;
+    [SerializeField] private LayerMask groundLayer; // Capa para detectar clics en el mapa/suelo
 
     //PLAYING CARDS
 
     // Estado de carta pendiente
     private CardData pendingCard;
-    public bool IsTargetingCard => pendingCard != null;
+    public bool IsTargetingCard => CurrentMode == TargetingMode.Card;
+    public bool IsMovingUnit => CurrentMode == TargetingMode.Movement;
     public event Action<CardData> OnCardTargetingStarted;
     public event Action<CardData> OnCardTargetingEnded;
+    //callbacks para cuando se empieza y termina/cancela el mover una unidad
+    public event Action<BaseUnit> OnUnitMovementStarted, OnUnitMovementEnded;
+
+    private MovementPathService mps; //para poder mover a las unidades seleccionadas
 
     private void Awake()
     {
         if (Instance != null && Instance != this) Destroy(gameObject);
         else Instance = this;
+
+        //inicializar el servicio de movimiento
+        mps = new MovementPathService();
     }
 
     public void SelectEntity(ISelectable target)
@@ -83,9 +99,9 @@ public class SelectionManager : MonoBehaviour
             SelectTarget();
         }
         // Cancelar apuntado con clic derecho
-        if (Input.GetKeyDown(KeyCode.Mouse1) && IsTargetingCard)
+        if (Input.GetKeyDown(KeyCode.Mouse1))
         {
-            CancelCardTargeting();
+            CancelCurrentTargeting();
         }
     }
 
@@ -93,18 +109,28 @@ public class SelectionManager : MonoBehaviour
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f, selectableLayer))
+        // Si estamos en modo movimiento raycasteamos contra el suelo, si no, contra entidades
+        LayerMask activeMask = (CurrentMode == TargetingMode.Movement) ? groundLayer : selectableLayer;
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, activeMask))
         {
             GameObject hitObject = hit.collider.gameObject;
 
-            // MODO A: Estamos eligiendo objetivo para la carta
-            if (IsTargetingCard)
+            // MODO CARTA
+            if (CurrentMode == TargetingMode.Card)
             {
                 ExecuteCardOnTarget(hitObject);
                 return;
             }
 
-            // MODO B: Selección normal de unidades / objetos
+            // MODO MOVIMIENTO
+            if (CurrentMode == TargetingMode.Movement)
+            {
+                ExecuteMovement(hit.point);
+                return;
+            }
+
+            // MODO NORMAL (Selección)
             if (hitObject.TryGetComponent<ISelectable>(out var unit))
             {
                 SelectEntity(unit);
@@ -112,7 +138,7 @@ public class SelectionManager : MonoBehaviour
             }
         }
 
-        if (IsTargetingCard) CancelCardTargeting();
+        if (CurrentMode != TargetingMode.Normal) CancelCurrentTargeting();
         else SelectEntity(null);
     }
 
@@ -133,8 +159,19 @@ public class SelectionManager : MonoBehaviour
         };
 
         pendingCard.PlayCard(context);
+
+        // 4. AVISAMOS AL ALIADO: Descarta la carta jugada de su mano a su pila de descartes
+        if (SelectedAlly.TryGetComponent<UnitCardController>(out var cardController))
+        {
+            cardController.DiscardCard(pendingCard);
+        }
+
         pendingCard = null; // Limpiamos el estado tras ejecutar
-        DeselectAll();
+        CurrentMode = TargetingMode.Normal;
+
+        //DeselectAll();
+        DeselectAfterPlayingCard();
+
     }
 
     public void DeselectAll()
@@ -149,6 +186,30 @@ public class SelectionManager : MonoBehaviour
         pendingCard = null;
     }
 
+    void DeselectAfterPlayingCard()
+    {
+        OnAllySelected?.Invoke(SelectedAlly);
+        OnCardTargetingEnded?.Invoke(pendingCard);
+        pendingCard = null;
+    }
+
+    private void ExecuteMovement(Vector3 destination)
+    {
+        if (SelectedAlly == null)
+        {
+            return;
+        }
+
+        if (mps.TryGetValidPath(SelectedAlly.transform.position, destination, 9999, out NavMeshPath path, out float totalDistance))
+        {
+            mps.MoveUnitAlongPath(SelectedAlly, path.corners, 6, () => Debug.Log("Unit movement ended"));
+        }
+
+        CurrentMode = TargetingMode.Normal;
+
+        OnUnitMovementEnded?.Invoke(SelectedAlly);
+    }
+
     //CARD TARGETING
 
     // AVISO DESDE LA CARTA: La UI llama a esto al pulsar una carta
@@ -160,7 +221,13 @@ public class SelectionManager : MonoBehaviour
             return; // No se puede jugar sin aliada seleccionada
         }
 
+        if(IsMovingUnit)
+        {
+            CancelMoveTargeting();
+        }
+
         pendingCard = card;
+        CurrentMode = TargetingMode.Card;
         OnCardTargetingStarted?.Invoke(card);
     }
 
@@ -168,5 +235,28 @@ public class SelectionManager : MonoBehaviour
     {
         OnCardTargetingEnded?.Invoke(pendingCard);
         pendingCard = null;
+        CurrentMode = TargetingMode.Normal;
+    }
+
+    public void StartMoveTargeting()
+    {
+        if (SelectedAlly == null) return;
+
+        if (IsTargetingCard) CancelCardTargeting();
+        CurrentMode = TargetingMode.Movement;
+
+        OnUnitMovementStarted?.Invoke(SelectedAlly);
+    }
+
+    void CancelMoveTargeting()
+    {
+        OnUnitMovementEnded?.Invoke(SelectedAlly);
+    }
+
+    public void CancelCurrentTargeting()
+    {
+        if (IsTargetingCard) CancelCardTargeting();
+        if (IsMovingUnit) CancelMoveTargeting();
+        CurrentMode = TargetingMode.Normal;
     }
 }

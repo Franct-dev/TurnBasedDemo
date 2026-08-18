@@ -6,21 +6,21 @@ public class UnitDisplayUI : MonoBehaviour
 {
     [SerializeField] private TMP_Text unitNameTXT;
     [SerializeField] private TMP_Text unitHealthTXT;
-    [SerializeField] private GameObject isTargetingWithCardDisplay; //Objecto que se activa cuando esta en modo seleccionar objetivo
+
 
     private void Start()
     {
         SelectionManager.Instance.OnAllySelected += DisplayAllyInfo;
         SelectionManager.Instance.OnEnemyInspected += DisplayEnemyInfo;
-        SelectionManager.Instance.OnCardTargetingStarted += (c) => isTargetingWithCardDisplay.SetActive(true);
-        SelectionManager.Instance.OnCardTargetingEnded += (c) => isTargetingWithCardDisplay.SetActive(false);
 
-        isTargetingWithCardDisplay.SetActive(false);
+        SelectionManager.Instance.OnSelectionCleared += HideInfo;
     }
 
     void DisplayGeneralInfo(BaseUnit unit)
     {
-        unitNameTXT.text = unit.name;
+        if (unit.Data == null) return;
+        unitNameTXT.text = unit.Data.UnitName;
+        unitHealthTXT.text = unit.Data.BaseHealth.ToString();
     }
 
     void DisplayAllyInfo(BaseUnit ally)
@@ -33,5 +33,11 @@ public class UnitDisplayUI : MonoBehaviour
     {
         DisplayGeneralInfo(enemy);
         unitNameTXT.color = Color.red;
+    }
+
+    void HideInfo()
+    {
+        unitNameTXT.text = string.Empty;
+        unitHealthTXT.text = string.Empty;
     }
 }
