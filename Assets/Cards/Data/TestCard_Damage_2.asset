@@ -17,6 +17,8 @@ MonoBehaviour:
   CardType: 
   Description: 
   validTargets: 4
+  castRange: 7
+  hasInfiniteRange: 0
   effects:
   - rid: 4370831526011338826
   references:

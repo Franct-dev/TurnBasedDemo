@@ -14,8 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitData
   UnitName: Pichardo
   Portrait: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
+  BaseMovementRange: 6
   BaseHealth: 10
   BaseDamage: 5
+  BaseAttackRange: 1
+  BaseArmor: 0
   startingDeck:
   - card: {fileID: 11400000, guid: 2fe3107eca765bb43b4ad3357c4801f9, type: 2}
     amount: 3

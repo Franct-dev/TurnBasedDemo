@@ -10,13 +10,11 @@ public class UnitCardController : MonoBehaviour
     public List<CardData> Hand { get; private set; } = new List<CardData>();
     public List<CardData> DiscardPile { get; private set; } = new List<CardData>();
 
-    private void Awake()
+    public void Initialize(UnitData data)
     {
-        InitializeDeck();
-    }
 
-    private void InitializeDeck()
-    {
+        unitData = data;
+
         if (unitData == null || unitData.startingDeck == null) return;
 
         DrawPile.Clear();

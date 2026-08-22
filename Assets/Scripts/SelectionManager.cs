@@ -200,7 +200,7 @@ public class SelectionManager : MonoBehaviour
             return;
         }
 
-        if (mps.TryGetValidPath(SelectedAlly.transform.position, destination, 9999, out NavMeshPath path, out float totalDistance))
+        if (mps.TryGetValidPath(SelectedAlly.transform.position, destination, SelectedAlly.MovementRange, out NavMeshPath path, out float totalDistance))
         {
             mps.MoveUnitAlongPath(SelectedAlly, path.corners, 6, () => Debug.Log("Unit movement ended"));
         }

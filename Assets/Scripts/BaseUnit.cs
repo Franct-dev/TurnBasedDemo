@@ -28,6 +28,29 @@ public class BaseUnit : MonoBehaviour, ISelectable, ITargeteable, IDamageable, I
 
     public UnitData Data;
 
+    //SUBCOMPONENTES
+    public UnitStats Stats { get; private set; }
+    public UnitCardController CardController { get; private set; }
+
+    public float MovementRange => Stats != null ? Stats.MovementRange : Data.BaseMovementRange;
+
+    void Awake()
+    {
+        Stats = GetComponent<UnitStats>();
+        CardController = GetComponent<UnitCardController>();
+
+        if(Data != null)
+        {
+            Initialize();
+        }
+    }
+
+    void Initialize()
+    {
+        Stats?.Initialize(Data);
+        CardController?.Initialize(Data);
+    }
+
     public void ApplyEffect(EffectContext context)
     {
 

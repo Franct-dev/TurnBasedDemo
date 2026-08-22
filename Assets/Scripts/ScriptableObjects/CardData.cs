@@ -16,13 +16,17 @@ public enum TargetType
 [CreateAssetMenu(menuName = "ScriptableObjects/CardData")]
 public class CardData : ScriptableObject
 {
+    [Header("DISPLAY")]
     public string CardName;
     public Sprite Artwork;
     public string CardType;
     [TextArea]
     public string Description;
 
+    [Header("GAMEPLAY")]
     public TargetType validTargets = TargetType.Enemy; // Se puede seleccionar múltiple en el Inspector
+    public float castRange = 5; //distancia (metros)
+    public bool hasInfiniteRange = false; //habilidades de rango global
 
     [SerializeReference, SubclassSelector]
     private List<CardEffect> effects = new List<CardEffect>();
@@ -45,6 +49,16 @@ public class CardData : ScriptableObject
         if (target == caster.gameObject)
         {
             return validTargets.HasFlag(TargetType.Self);
+        }
+
+        if (!hasInfiniteRange)
+        {
+            float distance = (caster.transform.position - target.transform.position).sqrMagnitude;
+            if (distance > castRange * castRange)
+            {
+                Debug.Log("Target outside of range");
+                return false;
+            }
         }
 
         // 2. Si el objetivo es una unidad (BaseUnit)
